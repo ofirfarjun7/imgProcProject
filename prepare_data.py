@@ -6,7 +6,7 @@ import cv2
 from torch.utils.data import Dataset
 
 class CharsDataset(Dataset):
-	def __init__(self):
+	def __init__(self, validation=False):
 		self.db = h5py.File('SynthText.h5', 'r')
 		im_names = list(self.db['data'].keys())
 
@@ -19,6 +19,14 @@ class CharsDataset(Dataset):
 			for idx, square in enumerate(charBBSquares):
 				charOb = {'image_name': im_name, 'idx': idx, 'square': square[:], 'label': fonts[idx]}
 				self.samples.append(charOb)
+
+		samples_len = int(0.8*len(self.samples))
+		validation_len = len(self.samples) - samples_len
+
+		if validation:
+			self.samples = self.samples[samples_len:]
+		else:
+			self.samples = self.samples[:samples_len]
 
 		self.samples = self.samples[:3]
 
@@ -136,11 +144,11 @@ def showImageWordsAndChars(im):
 # for name in im_names[:1]:
 	# showImageWordsAndChars(name)
 
-dataset = CharsDataset()
+dataset = CharsDataset(validation=True)
 
-for img,label in dataset:
+for x,y in dataset:
 	# here comes your training loop
-	plt.title(img)
-	plt.imshow(label, cmap='gray')
+	plt.title(y)
+	plt.imshow(x, cmap='gray')
 	plt.show()
 	pass
